@@ -15,12 +15,33 @@ func ListItems() gin.HandlerFunc {
 		Results []models.Item `json:"results"`
 		Total   int           `json:"total"`
 	}
+
 	return func(ctx *gin.Context) {
 		var res []models.Item
 		err := db.DB().Where("status = ?", models.ItemStatusPublished).Find(&res).Error
 		if err != nil {
 			// TODO: Submit error
 			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding items"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, Response{Results: res, Total: len(res)})
+	}
+}
+
+func ListMyItems() gin.HandlerFunc {
+	type Response struct {
+		Results []models.Item `json:"results"`
+		Total   int           `json:"total"`
+	}
+
+	return func(ctx *gin.Context) {
+		session := middlewares.MustGetSession(ctx)
+		var res []models.Item
+		err := db.DB().Where("author_id = ?", session.UserID).Find(&res).Error
+		if err != nil {
+			// TODO: Submit error
+			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding my items"})
 			return
 		}
 
@@ -73,7 +94,7 @@ func ReadItem() gin.HandlerFunc {
 
 		var item models.Item
 
-		err := db.DB().Where("id = ?", id).First(&item).Error
+		err := db.DB().Where("id = ?", id).Where("status = ?", models.ItemStatusPublished).First(&item).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
 				ctx.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "item not found"})
@@ -98,6 +119,8 @@ func UpdateItem() gin.HandlerFunc {
 	}
 
 	return func(ctx *gin.Context) {
+		session := middlewares.MustGetSession(ctx)
+
 		// get id
 		id := ctx.Param("id")
 
@@ -123,6 +146,11 @@ func UpdateItem() gin.HandlerFunc {
 			return
 		}
 
+		if item.AuthorID != session.UserID {
+			ctx.JSON(http.StatusForbidden, responses.ErrorResponse{Message: "you cannot update items of another user"})
+			return
+		}
+
 		if item.Title != req.Title {
 			item.Status = models.ItemStatusPending
 		}
@@ -145,8 +173,10 @@ func UpdateItem() gin.HandlerFunc {
 	}
 }
 
-func RemoveItem() gin.HandlerFunc {
+func ReadMyItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		session := middlewares.MustGetSession(ctx)
+
 		// get id
 		id := ctx.Param("id")
 
@@ -161,6 +191,41 @@ func RemoveItem() gin.HandlerFunc {
 
 			// TODO: Submit error
 			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding item"})
+			return
+		}
+
+		if item.AuthorID != session.UserID {
+			ctx.JSON(http.StatusForbidden, responses.ErrorResponse{Message: "you cannot access private items of another user"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, item)
+	}
+}
+
+func RemoveItem() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		session := middlewares.MustGetSession(ctx)
+
+		// get id
+		id := ctx.Param("id")
+
+		var item models.Item
+
+		err := db.DB().Where("id = ?", id).First(&item).Error
+		if err != nil {
+			if gorm.IsRecordNotFoundError(err) {
+				ctx.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "item not found"})
+				return
+			}
+
+			// TODO: Submit error
+			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding item"})
+			return
+		}
+
+		if item.AuthorID != session.UserID {
+			ctx.JSON(http.StatusForbidden, responses.ErrorResponse{Message: "you cannot remove items of another user"})
 			return
 		}
 

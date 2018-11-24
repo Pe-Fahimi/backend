@@ -18,10 +18,16 @@ Content-Type: application/json
     "password": "my-secure-password"
 }
 
-### Login
+> {%
+ if (response.status === 200) {
+     client.global.set('USER_TOKEN', response.body['token']);
+ }
+ %}
+
+### Logout
 
 DELETE {{host}}/logout
-User-Token: bfsr14re6mcg081njq9g
+User-Token: {{USER_TOKEN}}
 
 ### List Categories
 
@@ -34,5 +40,68 @@ GET {{host}}/locations
 ### List Items
 
 GET {{host}}/items
+
+> {%
+ if (response.status === 200) {
+     client.global.set('ITEM_ID', response.body['results'][0]);
+ }
+ %}
+
+### Read Item
+
+GET {{host}}/items/{{ITEM_ID}}
+
+### List My Items
+
+GET {{host}}/users/me/items
+User-Token: {{USER_TOKEN}}
+
+> {%
+ if (response.status === 200) {
+     client.global.set('ITEM_ID', response.body['results'][0]);
+ }
+ %}
+
+### Create Item
+
+POST {{host}}/users/me/items
+User-Token: {{USER_TOKEN}}
+Content-Type: application/json
+
+{
+    "title": "Item 2",
+    "content": "Lorem Ipsum ...",
+    "location_id": 1,
+    "category_id": 1
+}
+
+> {%
+ if (response.status === 201) {
+     client.global.set('ITEM_ID', response.body['id']);
+ }
+ %}
+
+### Read My Item
+
+GET {{host}}/users/me/items/{{ITEM_ID}}
+User-Token: {{USER_TOKEN}}
+
+### Update My Item
+
+PUT {{host}}/users/me/items/{{ITEM_ID}}
+User-Token: {{USER_TOKEN}}
+Content-Type: application/json
+
+{
+    "title": "Item 2 Edited",
+    "content": "Lorem Ipsum ...",
+    "location_id": 2,
+    "category_id": 1
+}
+
+### Remove My Item
+
+DELETE {{host}}/users/me/items/{{ITEM_ID}}
+User-Token: {{USER_TOKEN}}
 
 ###
