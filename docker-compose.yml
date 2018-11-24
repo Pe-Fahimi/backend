@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+    postgres:
+        image: postgres
+        environment:
+            POSTGRES_DB: ketabdoozak
+            POSTGRES_PASSWORD: admin
+            POSTGRES_USER: admin
+            TZ: Asia/Tehran
+        ports:
+        - 5432:5432
+
+    core:
+        image: golang
+        volumes:
+        - $GOPATH/src/github.com/ketabdoozak/backend:/go/src/github.com/ketabdoozak/backend
+        working_dir: /go/src/github.com/ketabdoozak/backend
+        command: 'make run'
+        ports:
+        - 8080:8080
+        environment:
+            ENV: development
+            DATABASE_URI: postgres://admin:admin@postgres:5432/ketabdoozak?sslmode=disable
+            SERVER_ADDRESS: 0.0.0.0:8080
+            GOBIN: /go/bin
+        depends_on:
+        - postgres
+        links:
+        - postgres
+
+    web:
+        image: node
+        ports:
+        - 8080:8080
+        volumes:
+        - $GOPATH/src/github.com/ketabdoozak/web:/src
+        environment:
+            ENV: development
+        working_dir: /src
+        command: npm run dev
+        depends_on:
+        - core

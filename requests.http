@@ -1,0 +1,34 @@
+### Register
+
+POST {{host}}/register
+Content-Type: application/json
+
+{
+    "email": "test@mail.tld",
+    "password": "my-secure-password"
+}
+
+### Login
+
+POST {{host}}/login
+Content-Type: application/json
+
+{
+    "email": "test@mail.tld",
+    "password": "my-secure-password"
+}
+
+### Login
+
+DELETE {{host}}/logout
+User-Token: bfsr14re6mcg081njq9g
+
+### List Categories
+
+GET {{host}}/categories
+
+### List Locations
+
+GET {{host}}/locations
+
+###
