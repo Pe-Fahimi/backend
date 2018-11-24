@@ -18,7 +18,7 @@ func ListCategories() gin.HandlerFunc {
 		err := db.DB().Find(&res).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err, Message: "error on finding categories"})
+			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding categories"})
 			return
 		}
 

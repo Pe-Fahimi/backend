@@ -26,24 +26,24 @@ func Authenticate() gin.HandlerFunc {
 		err := db.DB().Where(models.Session{Token: userToken}).Preload("User").First(&session).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err, Message: "invalid user token"})
+				ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err.Error(), Message: "invalid user token"})
 				ctx.Abort()
 				return
 			} else {
-				ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err, Message: "error in checking session"})
+				ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error in checking session"})
 				ctx.Abort()
 				return
 			}
 		}
 
 		if session.ExpiresAt.Before(time.Now()) {
-			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err, Message: "session expired"})
+			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err.Error(), Message: "session expired"})
 			ctx.Abort()
 			return
 		}
 
 		if session.DeletedAt != nil {
-			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err, Message: "invalid user token"})
+			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err.Error(), Message: "invalid user token"})
 			ctx.Abort()
 			return
 		}

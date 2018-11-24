@@ -14,7 +14,7 @@ func Logout() gin.HandlerFunc {
 		err := db.DB().Delete(&session).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err, Message: "error on deleting session"})
+			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on deleting session"})
 			return
 		}
 

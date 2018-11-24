@@ -15,4 +15,10 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	r.GET("/categories", handlers.ListCategories())
 
 	r.GET("/locations", handlers.ListLocations())
+
+	r.GET("items", handlers.ListItems())
+	r.GET("items/:id", handlers.ReadItem())
+	r.POST("items", middlewares.Authenticate(), handlers.CreateItem())
+	r.PUT("items/:id", middlewares.Authenticate(), handlers.UpdateItem())
+	r.DELETE("items/:id", middlewares.Authenticate(), handlers.RemoveItem())
 }

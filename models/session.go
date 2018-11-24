@@ -3,13 +3,13 @@ package models
 import "time"
 
 type Session struct {
-	ID        int64
-	UserID    int64
-	User      *User
-	Token     string
-	ClientIP  *string
-	UserAgent *string
-	CreatedAt time.Time
-	ExpiresAt time.Time
-	DeletedAt *time.Time
+	ID        int64      `json:"id"`
+	UserID    int64      `json:"user_id"`
+	User      *User      `json:"user,omitempty"`
+	Token     string     `json:"token"`
+	ClientIP  *string    `json:"client_ip,omitempty"`
+	UserAgent *string    `json:"user_agent,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+	ExpiresAt time.Time  `json:"expires_at"`
+	DeletedAt *time.Time `json:"-"`
 }

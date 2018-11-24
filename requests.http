@@ -31,4 +31,8 @@ GET {{host}}/categories
 
 GET {{host}}/locations
 
+### List Items
+
+GET {{host}}/items
+
 ###
