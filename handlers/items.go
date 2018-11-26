@@ -38,7 +38,7 @@ func ListMyItems() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := middlewares.MustGetSession(ctx)
 		var res []models.Item
-		err := db.DB().Where("author_id = ?", session.UserID).Find(&res).Error
+		err := db.DB().Where("author_id = ?", session.UserID).Preload("Category").Preload("Location").Find(&res).Error
 		if err != nil {
 			// TODO: Submit error
 			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding my items"})
@@ -74,6 +74,7 @@ func CreateItem() gin.HandlerFunc {
 			AuthorID:   session.User.ID,
 			LocationID: req.LocationID,
 			CategoryID: req.CategoryID,
+			Status:     models.ItemStatusPending,
 		}
 
 		err = db.DB().Create(&item).Error
