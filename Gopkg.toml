@@ -1,0 +1,4 @@
+[metadata.heroku]
+  root-package = "backend"
+  go-version = "go1.11"
+  install = [ "./..." ]
