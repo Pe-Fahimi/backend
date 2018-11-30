@@ -4,6 +4,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/ketabdoozak/backend/pkg/db"
+	"github.com/ketabdoozak/backend/pkg/minio"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +15,8 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	minio.Storage()
 
 	env := os.Getenv("ENV")
 	if env == "production" {

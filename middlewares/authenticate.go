@@ -17,7 +17,7 @@ func Authenticate() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userToken := ctx.GetHeader("User-Token")
 		if userToken == "" {
-			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "unauthorized"})
+			ctx.JSON(http.StatusUnauthorized, responses.Error{Message: "unauthorized"})
 			ctx.Abort()
 			return
 		}
@@ -26,24 +26,24 @@ func Authenticate() gin.HandlerFunc {
 		err := db.DB().Where(models.Session{Token: userToken}).Preload("User").First(&session).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err.Error(), Message: "invalid user token"})
+				ctx.JSON(http.StatusUnauthorized, responses.Error{Error: err.Error(), Message: "invalid user token"})
 				ctx.Abort()
 				return
 			} else {
-				ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error in checking session"})
+				ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error in checking session"})
 				ctx.Abort()
 				return
 			}
 		}
 
 		if session.ExpiresAt.Before(time.Now()) {
-			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err.Error(), Message: "session expired"})
+			ctx.JSON(http.StatusUnauthorized, responses.Error{Error: err.Error(), Message: "session expired"})
 			ctx.Abort()
 			return
 		}
 
 		if session.DeletedAt != nil {
-			ctx.JSON(http.StatusUnauthorized, responses.ErrorResponse{Error: err.Error(), Message: "invalid user token"})
+			ctx.JSON(http.StatusUnauthorized, responses.Error{Error: err.Error(), Message: "invalid user token"})
 			ctx.Abort()
 			return
 		}

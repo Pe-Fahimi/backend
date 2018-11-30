@@ -18,7 +18,7 @@ func ListLocations() gin.HandlerFunc {
 		err := db.DB().Find(&res).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding locations"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding locations"})
 			return
 		}
 

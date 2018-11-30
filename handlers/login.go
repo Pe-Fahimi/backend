@@ -31,7 +31,7 @@ func Login() gin.HandlerFunc {
 		var req Request
 		err := ctx.Bind(&req)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: err.Error(), Message: "invalid request data"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "invalid request data"})
 			return
 		}
 
@@ -40,17 +40,17 @@ func Login() gin.HandlerFunc {
 		err = db.DB().Where(models.User{Email: req.Email}).First(&user).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: err.Error(), Message: "user does not exist"})
+				ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "user does not exist"})
 			} else {
 				// TODO: Submit error
-				ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding user"})
+				ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding user"})
 				return
 			}
 		}
 
 		// check password is valid
 		if !password.CheckPasswordHash(req.Password, user.PasswordHash) {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: err.Error(), Message: "invalid user password"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "invalid user password"})
 			return
 		}
 
@@ -67,7 +67,7 @@ func Login() gin.HandlerFunc {
 		err = db.DB().Create(&session).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on creating session"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on creating session"})
 			return
 		}
 

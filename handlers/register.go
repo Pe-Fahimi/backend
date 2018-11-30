@@ -34,13 +34,13 @@ func Register() gin.HandlerFunc {
 		var req Request
 		err := ctx.Bind(&req)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: err.Error(), Message: "invalid request data"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "invalid request data"})
 			return
 		}
 
 		// check email is valid
 		if !emailRegexp.MatchString(req.Email) {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid email format"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Message: "invalid email format"})
 			return
 		}
 
@@ -50,11 +50,11 @@ func Register() gin.HandlerFunc {
 		if err != nil {
 			if !gorm.IsRecordNotFoundError(err) {
 				// TODO: Submit error
-				ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on checking user"})
+				ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on checking user"})
 				return
 			}
 		} else {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "email already exists"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Message: "email already exists"})
 			return
 		}
 
@@ -65,7 +65,7 @@ func Register() gin.HandlerFunc {
 		user.PasswordHash, err = password.HashPassword(req.Password)
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "error on creating password hash", Error: err.Error()})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Message: "error on creating password hash", Error: err.Error()})
 			return
 		}
 
@@ -73,7 +73,7 @@ func Register() gin.HandlerFunc {
 		err = db.DB().Create(&user).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "error on creating user", Error: err.Error()})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Message: "error on creating user", Error: err.Error()})
 			return
 		}
 
@@ -90,7 +90,7 @@ func Register() gin.HandlerFunc {
 		err = db.DB().Create(&session).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on creating session"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on creating session"})
 			return
 		}
 

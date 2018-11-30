@@ -1,4 +1,4 @@
 package responses
 
-type EmptyResponse struct {
+type Empty struct {
 }

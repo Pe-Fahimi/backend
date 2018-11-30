@@ -18,10 +18,10 @@ func ListItems() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		var res []models.Item
-		err := db.DB().Where("status = ?", models.ItemStatusPublished).Find(&res).Error
+		err := db.DB().Where("status = ?", models.ItemStatusPublished).Preload("Category").Preload("Location").Find(&res).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding items"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding items"})
 			return
 		}
 
@@ -41,7 +41,7 @@ func ListMyItems() gin.HandlerFunc {
 		err := db.DB().Where("author_id = ?", session.UserID).Preload("Category").Preload("Location").Find(&res).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding my items"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding my items"})
 			return
 		}
 
@@ -64,7 +64,7 @@ func CreateItem() gin.HandlerFunc {
 		var req Request
 		err := ctx.Bind(&req)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: err.Error(), Message: "invalid request data"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "invalid request data"})
 			return
 		}
 
@@ -80,7 +80,7 @@ func CreateItem() gin.HandlerFunc {
 		err = db.DB().Create(&item).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on creating item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on creating item"})
 			return
 		}
 
@@ -98,12 +98,12 @@ func ReadItem() gin.HandlerFunc {
 		err := db.DB().Where("id = ?", id).Where("status = ?", models.ItemStatusPublished).First(&item).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "item not found"})
+				ctx.JSON(http.StatusNotFound, responses.Error{Message: "item not found"})
 				return
 			}
 
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding item"})
 			return
 		}
 
@@ -129,7 +129,7 @@ func UpdateItem() gin.HandlerFunc {
 		var req Request
 		err := ctx.Bind(&req)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: err.Error(), Message: "invalid request data"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "invalid request data"})
 			return
 		}
 
@@ -138,17 +138,17 @@ func UpdateItem() gin.HandlerFunc {
 		err = db.DB().Where("id = ?", id).First(&item).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "item not found"})
+				ctx.JSON(http.StatusNotFound, responses.Error{Message: "item not found"})
 				return
 			}
 
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding item"})
 			return
 		}
 
 		if item.AuthorID != session.UserID {
-			ctx.JSON(http.StatusForbidden, responses.ErrorResponse{Message: "you cannot update items of another user"})
+			ctx.JSON(http.StatusForbidden, responses.Error{Message: "you cannot update items of another user"})
 			return
 		}
 
@@ -166,7 +166,7 @@ func UpdateItem() gin.HandlerFunc {
 		err = db.DB().Save(&item).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on updating item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on updating item"})
 			return
 		}
 
@@ -186,17 +186,17 @@ func ReadMyItem() gin.HandlerFunc {
 		err := db.DB().Where("id = ?", id).First(&item).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "item not found"})
+				ctx.JSON(http.StatusNotFound, responses.Error{Message: "item not found"})
 				return
 			}
 
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding item"})
 			return
 		}
 
 		if item.AuthorID != session.UserID {
-			ctx.JSON(http.StatusForbidden, responses.ErrorResponse{Message: "you cannot access private items of another user"})
+			ctx.JSON(http.StatusForbidden, responses.Error{Message: "you cannot access private items of another user"})
 			return
 		}
 
@@ -216,27 +216,27 @@ func RemoveItem() gin.HandlerFunc {
 		err := db.DB().Where("id = ?", id).First(&item).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
-				ctx.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "item not found"})
+				ctx.JSON(http.StatusNotFound, responses.Error{Message: "item not found"})
 				return
 			}
 
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on finding item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on finding item"})
 			return
 		}
 
 		if item.AuthorID != session.UserID {
-			ctx.JSON(http.StatusForbidden, responses.ErrorResponse{Message: "you cannot remove items of another user"})
+			ctx.JSON(http.StatusForbidden, responses.Error{Message: "you cannot remove items of another user"})
 			return
 		}
 
 		err = db.DB().Delete(&item).Error
 		if err != nil {
 			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error(), Message: "error on deleting item"})
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on deleting item"})
 			return
 		}
 
-		ctx.JSON(http.StatusNoContent, responses.EmptyResponse{})
+		ctx.JSON(http.StatusNoContent, responses.Empty{})
 	}
 }
