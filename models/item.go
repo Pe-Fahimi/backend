@@ -18,6 +18,7 @@ type Item struct {
 	Location   Location   `json:"location,omitempty"`
 	CategoryID int64      `json:"category_id"`
 	Category   Category   `json:"category,omitempty"`
+	ImageURL   *string    `json:"image_url,omitempty"`
 	Status     string     `json:"status"`
 	CreatedAt  time.Time  `json:"created_at"`
 	DeletedAt  *time.Time `json:"-"`

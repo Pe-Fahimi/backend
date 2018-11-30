@@ -16,11 +16,11 @@ func RegisterRoutes(r *gin.RouterGroup) {
 
 	r.GET("/locations", handlers.ListLocations())
 
-	r.POST("/assets", handlers.UploadAsset())
-	r.GET("/assets/:id", middlewares.Authenticate(), handlers.GetAsset())
+	r.POST("/assets", middlewares.Authenticate(), handlers.UploadAsset())
+	r.GET("/assets/:object_name", handlers.GetAsset())
 
 	r.GET("/items", handlers.ListItems())
-	r.GET("/items/:object_name", handlers.ReadItem())
+	r.GET("/items/:id", handlers.ReadItem())
 	r.GET("/users/me/items", middlewares.Authenticate(), handlers.ListMyItems())
 	r.GET("/users/me/items/:id", middlewares.Authenticate(), handlers.ReadMyItem())
 	r.POST("/users/me/items", middlewares.Authenticate(), handlers.CreateItem())

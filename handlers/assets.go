@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/ketabdoozak/backend/pkg/minio"
 	"github.com/ketabdoozak/backend/pkg/responses"
@@ -18,14 +17,20 @@ func UploadAsset() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		objectName := xid.New().String()
 
-		data, err := ioutil.ReadAll(ctx.Request.Body)
+		fh, err := ctx.FormFile("upload")
 		if err != nil {
-			// TODO: Submit error
-			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on reading object from request"})
+			ctx.JSON(http.StatusBadRequest, responses.Error{Error: err.Error(), Message: "error on reading file from request"})
 			return
 		}
 
-		_, err = minio.Storage().PutObjectWithContext(ctx, minio.BucketName(), objectName, bytes.NewReader(data), int64(len(data)), theMinio.PutObjectOptions{})
+		f, err := fh.Open()
+		if err != nil {
+			// TODO: Submit error
+			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on opening file"})
+			return
+		}
+
+		_, err = minio.Storage().PutObjectWithContext(ctx, minio.BucketName(), objectName, f, fh.Size, theMinio.PutObjectOptions{})
 		if err != nil {
 			// TODO: Submit error
 			ctx.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error(), Message: "error on putting object to storage"})

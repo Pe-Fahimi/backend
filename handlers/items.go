@@ -51,10 +51,11 @@ func ListMyItems() gin.HandlerFunc {
 
 func CreateItem() gin.HandlerFunc {
 	type Request struct {
-		Title      string `json:"title" binding:"required"`
-		Content    string `json:"content"`
-		LocationID int64  `json:"location_id" binding:"required"`
-		CategoryID int64  `json:"category_id" binding:"required"`
+		Title      string  `json:"title" binding:"required"`
+		Content    string  `json:"content"`
+		ImageURL   *string `json:"image_url,omitempty"`
+		LocationID int64   `json:"location_id" binding:"required"`
+		CategoryID int64   `json:"category_id" binding:"required"`
 	}
 
 	return func(ctx *gin.Context) {
@@ -74,6 +75,7 @@ func CreateItem() gin.HandlerFunc {
 			AuthorID:   session.User.ID,
 			LocationID: req.LocationID,
 			CategoryID: req.CategoryID,
+			ImageURL:   req.ImageURL,
 			Status:     models.ItemStatusPending,
 		}
 
@@ -95,7 +97,7 @@ func ReadItem() gin.HandlerFunc {
 
 		var item models.Item
 
-		err := db.DB().Where("id = ?", id).Where("status = ?", models.ItemStatusPublished).First(&item).Error
+		err := db.DB().Where("id = ?", id).Where("status = ?", models.ItemStatusPublished).Preload("Category").Preload("Location").First(&item).Error
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
 				ctx.JSON(http.StatusNotFound, responses.Error{Message: "item not found"})
@@ -113,10 +115,11 @@ func ReadItem() gin.HandlerFunc {
 
 func UpdateItem() gin.HandlerFunc {
 	type Request struct {
-		Title      string `json:"title" binding:"required"`
-		Content    string `json:"content"`
-		LocationID int64  `json:"location_id" binding:"required"`
-		CategoryID int64  `json:"category_id" binding:"required"`
+		Title      string  `json:"title" binding:"required"`
+		Content    string  `json:"content"`
+		ImageURL   *string `json:"image_url,omitempty"`
+		LocationID int64   `json:"location_id" binding:"required"`
+		CategoryID int64   `json:"category_id" binding:"required"`
 	}
 
 	return func(ctx *gin.Context) {
@@ -162,6 +165,7 @@ func UpdateItem() gin.HandlerFunc {
 		item.Content = req.Content
 		item.LocationID = req.LocationID
 		item.CategoryID = req.CategoryID
+		item.ImageURL = req.ImageURL
 
 		err = db.DB().Save(&item).Error
 		if err != nil {
